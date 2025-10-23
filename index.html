@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Personal Blog</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </button>
+
+    <!-- Table of Contents Sidebar -->
+    <aside class="toc-sidebar" id="tocSidebar">
+        <div class="toc-header">
+            <h3>Contents</h3>
+            <button class="close-btn" id="closeSidebar">×</button>
+        </div>
+        <nav class="toc-nav" id="tocNav">
+            <!-- TOC will be generated dynamically -->
+        </nav>
+    </aside>
+
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Content -->
+    <main class="container">
+        <header class="blog-header">
+            <h1>My Personal Blog</h1>
+            <p class="subtitle">Thoughts, stories and ideas</p>
+            <button class="admin-btn" id="adminBtn">Admin Login</button>
+        </header>
+
+        <!-- Blog List -->
+        <div class="blog-list" id="blogList">
+            <!-- Blog posts will be loaded here -->
+        </div>
+
+        <!-- Single Blog View (hidden by default) -->
+        <article class="blog-post" id="blogPost" style="display: none;">
+            <button class="back-btn" id="backBtn">← Back to all posts</button>
+            <div class="post-header">
+                <h1 class="post-title" id="postTitle"></h1>
+                <div class="post-meta">
+                    <span class="post-author" id="postAuthor"></span>
+                    <span class="post-date" id="postDate"></span>
+                </div>
+            </div>
+            <div class="post-content" id="postContent">
+                <!-- Markdown content will be rendered here -->
+            </div>
+        </article>
+    </main>
+
+    <!-- Admin Login Modal -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Admin Login</h2>
+            <form id="loginForm">
+                <input type="password" id="adminPassword" placeholder="Enter admin password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Include marked.js for markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

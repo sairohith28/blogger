@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Editor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="editor-body">
+    <div class="editor-container">
+        <!-- Editor Header -->
+        <header class="editor-header">
+            <h1>✍️ Write Your Blog</h1>
+            <div class="editor-actions">
+                <button class="btn-secondary" id="backToHome">Back to Blog</button>
+                <button class="btn-primary" id="publishBtn">Publish Post</button>
+            </div>
+        </header>
+
+        <!-- Post Metadata -->
+        <div class="post-metadata">
+            <input type="text" id="postTitleInput" class="title-input" placeholder="Your amazing blog post title...">
+            <input type="text" id="postAuthorInput" class="author-input" placeholder="Author name">
+        </div>
+
+        <!-- Editor Layout: Side by Side -->
+        <div class="editor-layout">
+            <!-- Markdown Editor -->
+            <div class="editor-pane">
+                <div class="pane-header">
+                    <h3>📝 Markdown Editor</h3>
+                    <div class="editor-tools">
+                        <button class="tool-btn" data-action="bold" title="Bold">B</button>
+                        <button class="tool-btn" data-action="italic" title="Italic">I</button>
+                        <button class="tool-btn" data-action="heading" title="Heading">H</button>
+                        <button class="tool-btn" data-action="link" title="Link">🔗</button>
+                        <button class="tool-btn" data-action="code" title="Code">&lt;/&gt;</button>
+                    </div>
+                </div>
+                <textarea id="markdownEditor" class="markdown-textarea" placeholder="Start writing in markdown...
+
+# Your First Heading
+
+Write your content here...
+
+## Subheading
+
+- List item 1
+- List item 2
+
+**Bold text** and *italic text*
+
+```javascript
+// Code blocks are supported
+console.log('Hello World');
+```
+"></textarea>
+            </div>
+
+            <!-- Live Preview -->
+            <div class="preview-pane">
+                <div class="pane-header">
+                    <h3>👁️ Live Preview</h3>
+                    <button class="btn-toc" id="toggleTocPreview">Show TOC</button>
+                </div>
+                <div class="preview-content" id="previewContent">
+                    <p class="empty-preview">Your preview will appear here...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOC Preview (hidden by default) -->
+        <div class="toc-preview" id="tocPreview" style="display: none;">
+            <h4>Table of Contents Preview</h4>
+            <div id="tocPreviewContent"></div>
+        </div>
+    </div>
+
+    <!-- Include marked.js for markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="editor.js"></script>
+</body>
+</html>
