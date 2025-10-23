@@ -7,6 +7,9 @@ const ADMIN_PASSWORD = 'admin123'; // Change this to your desired password
 let currentView = 'list'; // 'list' or 'single'
 let currentPostId = null;
 let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+let allPosts = [];
+let filteredPosts = [];
+let activeFilter = null;
 
 // ===========================
 // INITIALIZE
@@ -90,20 +93,34 @@ function initializeEventListeners() {
     if (isAdmin) {
         adminBtn.textContent = 'Write New Post';
     }
+
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            handleSearch(e.target.value);
+        });
+    }
 }
 
 // ===========================
 // BLOG POSTS MANAGEMENT
 // ===========================
 function loadBlogPosts() {
-    const posts = getPosts();
+    allPosts = getPosts();
+    filteredPosts = allPosts;
+    displayPosts(filteredPosts);
+    displayPopularTags();
+}
+
+function displayPosts(posts) {
     const blogList = document.getElementById('blogList');
 
     if (posts.length === 0) {
         blogList.innerHTML = `
             <div class="empty-state">
-                <h3>No posts yet</h3>
-                <p>Be the first to write something amazing!</p>
+                <h3>${allPosts.length === 0 ? 'No posts yet' : 'No posts found'}</h3>
+                <p>${allPosts.length === 0 ? 'Be the first to write something amazing!' : 'Try a different search or filter'}</p>
             </div>
         `;
         return;
@@ -111,14 +128,101 @@ function loadBlogPosts() {
 
     blogList.innerHTML = posts.map(post => `
         <div class="blog-card" onclick="viewPost('${post.id}')">
+            ${post.category ? `<span class="category-badge">${escapeHtml(post.category)}</span>` : ''}
             <h2>${escapeHtml(post.title)}</h2>
             <p class="excerpt">${getExcerpt(post.content)}</p>
             <div class="meta">
                 <span>By ${escapeHtml(post.author)}</span>
                 <span>${formatDate(post.date)}</span>
             </div>
+            ${post.readTime ? `<div class="post-stats"><span>📖 ${post.readTime} min read</span></div>` : ''}
+            ${post.tags && post.tags.length > 0 ? `
+                <div class="blog-tags">
+                    ${post.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                </div>
+            ` : ''}
         </div>
     `).join('');
+}
+
+// ===========================
+// SEARCH AND FILTER
+// ===========================
+function handleSearch(query) {
+    const searchTerm = query.toLowerCase().trim();
+    
+    if (!searchTerm) {
+        filteredPosts = activeFilter 
+            ? allPosts.filter(post => post.tags && post.tags.includes(activeFilter))
+            : allPosts;
+    } else {
+        const postsToSearch = activeFilter
+            ? allPosts.filter(post => post.tags && post.tags.includes(activeFilter))
+            : allPosts;
+            
+        filteredPosts = postsToSearch.filter(post => 
+            post.title.toLowerCase().includes(searchTerm) ||
+            post.content.toLowerCase().includes(searchTerm) ||
+            post.author.toLowerCase().includes(searchTerm) ||
+            (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ||
+            (post.category && post.category.toLowerCase().includes(searchTerm))
+        );
+    }
+    
+    displayPosts(filteredPosts);
+}
+
+function displayPopularTags() {
+    const filterTagsContainer = document.getElementById('filterTags');
+    if (!filterTagsContainer) return;
+
+    // Collect all tags
+    const tagCount = {};
+    allPosts.forEach(post => {
+        if (post.tags) {
+            post.tags.forEach(tag => {
+                tagCount[tag] = (tagCount[tag] || 0) + 1;
+            });
+        }
+    });
+
+    // Sort by count and get top tags
+    const topTags = Object.entries(tagCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([tag]) => tag);
+
+    if (topTags.length === 0) {
+        filterTagsContainer.innerHTML = '';
+        return;
+    }
+
+    filterTagsContainer.innerHTML = topTags.map(tag => 
+        `<button class="filter-tag" onclick="filterByTag('${escapeHtml(tag)}')">${escapeHtml(tag)}</button>`
+    ).join('');
+}
+
+function filterByTag(tag) {
+    const searchInput = document.getElementById('searchInput');
+    
+    if (activeFilter === tag) {
+        // Remove filter
+        activeFilter = null;
+        filteredPosts = allPosts;
+        document.querySelectorAll('.filter-tag').forEach(btn => btn.classList.remove('active'));
+    } else {
+        // Apply filter
+        activeFilter = tag;
+        filteredPosts = allPosts.filter(post => post.tags && post.tags.includes(tag));
+        document.querySelectorAll('.filter-tag').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent === tag);
+        });
+    }
+    
+    // Clear search
+    if (searchInput) searchInput.value = '';
+    
+    displayPosts(filteredPosts);
 }
 
 function viewPost(postId) {
@@ -145,6 +249,30 @@ function viewPost(postId) {
     document.getElementById('postAuthor').textContent = `By ${post.author}`;
     document.getElementById('postDate').textContent = formatDate(post.date);
     
+    // Add category and reading time to meta
+    const postMeta = document.querySelector('.post-meta');
+    postMeta.innerHTML = `
+        <span class="post-author">By ${escapeHtml(post.author)}</span>
+        <span class="post-date">${formatDate(post.date)}</span>
+        ${post.category ? `<span class="category-badge">${escapeHtml(post.category)}</span>` : ''}
+    `;
+    
+    // Add reading time and tags after title
+    const postHeader = document.querySelector('.post-header');
+    if (post.readTime) {
+        const readingTime = document.createElement('p');
+        readingTime.className = 'post-reading-time';
+        readingTime.innerHTML = `📖 ${post.readTime} minute read`;
+        postHeader.appendChild(readingTime);
+    }
+    
+    if (post.tags && post.tags.length > 0) {
+        const tagsContainer = document.createElement('div');
+        tagsContainer.className = 'post-tags';
+        tagsContainer.innerHTML = post.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
+        postHeader.appendChild(tagsContainer);
+    }
+    
     const postContent = document.getElementById('postContent');
     postContent.innerHTML = marked.parse(post.content);
 
@@ -163,8 +291,15 @@ function showBlogList() {
     document.getElementById('blogList').style.display = 'grid';
     document.querySelector('.blog-header').style.display = 'block';
 
-    // Clear TOC
+    // Clear TOC and dynamic elements
     document.getElementById('tocNav').innerHTML = '';
+    
+    // Remove dynamic elements from post header
+    const postHeader = document.querySelector('.post-header');
+    const readingTime = postHeader.querySelector('.post-reading-time');
+    const postTags = postHeader.querySelector('.post-tags');
+    if (readingTime) readingTime.remove();
+    if (postTags) postTags.remove();
 
     window.scrollTo(0, 0);
 }
@@ -263,3 +398,4 @@ function formatDate(dateString) {
 // EXPOSE FUNCTIONS GLOBALLY
 // ===========================
 window.viewPost = viewPost;
+window.filterByTag = filterByTag;

@@ -21,6 +21,10 @@
         <div class="post-metadata">
             <input type="text" id="postTitleInput" class="title-input" placeholder="Your amazing blog post title...">
             <input type="text" id="postAuthorInput" class="author-input" placeholder="Author name">
+            <div class="metadata-row">
+                <input type="text" id="postTags" class="tags-input" placeholder="Tags (comma separated): javascript, tutorial, web">
+                <input type="text" id="postCategory" class="category-input" placeholder="Category: Technology">
+            </div>
         </div>
 
         <!-- Editor Layout: Side by Side -->
@@ -30,12 +34,20 @@
                 <div class="pane-header">
                     <h3>📝 Markdown Editor</h3>
                     <div class="editor-tools">
-                        <button class="tool-btn" data-action="bold" title="Bold">B</button>
-                        <button class="tool-btn" data-action="italic" title="Italic">I</button>
+                        <button class="tool-btn" data-action="bold" title="Bold (Ctrl+B)">B</button>
+                        <button class="tool-btn" data-action="italic" title="Italic (Ctrl+I)">I</button>
                         <button class="tool-btn" data-action="heading" title="Heading">H</button>
                         <button class="tool-btn" data-action="link" title="Link">🔗</button>
+                        <button class="tool-btn" data-action="image" title="Image">📷</button>
                         <button class="tool-btn" data-action="code" title="Code">&lt;/&gt;</button>
+                        <button class="tool-btn" data-action="quote" title="Quote">❝</button>
+                        <button class="tool-btn" data-action="list" title="List">≡</button>
                     </div>
+                </div>
+                <div class="editor-stats">
+                    <span id="wordCount">0 words</span>
+                    <span id="charCount">0 characters</span>
+                    <span id="readTime">0 min read</span>
                 </div>
                 <textarea id="markdownEditor" class="markdown-textarea" placeholder="Start writing in markdown...
 
@@ -61,7 +73,10 @@ console.log('Hello World');
             <div class="preview-pane">
                 <div class="pane-header">
                     <h3>👁️ Live Preview</h3>
-                    <button class="btn-toc" id="toggleTocPreview">Show TOC</button>
+                    <div class="preview-actions">
+                        <button class="btn-toc" id="toggleTocPreview">Show TOC</button>
+                        <button class="btn-toc" id="uploadImageBtn">📤 Upload Image</button>
+                    </div>
                 </div>
                 <div class="preview-content" id="previewContent">
                     <p class="empty-preview">Your preview will appear here...</p>
@@ -73,6 +88,33 @@ console.log('Hello World');
         <div class="toc-preview" id="tocPreview" style="display: none;">
             <h4>Table of Contents Preview</h4>
             <div id="tocPreviewContent"></div>
+        </div>
+    </div>
+
+    <!-- Image Upload Modal -->
+    <div class="image-modal" id="imageModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeImageModal">&times;</span>
+            <h2>Add Image</h2>
+            <div class="image-upload-options">
+                <div class="upload-option">
+                    <h3>📁 Upload from Device</h3>
+                    <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
+                    <button class="btn-upload" id="selectFileBtn">Choose File</button>
+                    <p class="upload-info" id="fileName">No file selected</p>
+                </div>
+                <div class="upload-divider">OR</div>
+                <div class="upload-option">
+                    <h3>🔗 Image URL</h3>
+                    <input type="text" id="imageUrlInput" class="url-input" placeholder="https://example.com/image.jpg">
+                    <input type="text" id="imageAltInput" class="url-input" placeholder="Image description (alt text)">
+                </div>
+            </div>
+            <div class="image-preview-container" id="imagePreviewContainer" style="display: none;">
+                <h4>Preview:</h4>
+                <img id="imagePreview" src="" alt="Preview">
+            </div>
+            <button class="btn-insert-image" id="insertImageBtn">Insert Image</button>
         </div>
     </div>
 
