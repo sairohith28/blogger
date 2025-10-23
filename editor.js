@@ -3,6 +3,7 @@
 // ===========================
 const STORAGE_KEY = 'blog_posts';
 let autoSaveTimer = null;
+let currentImageData = null;
 
 // ===========================
 // INITIALIZE
@@ -33,6 +34,7 @@ function initializeEditor() {
     // Live preview
     markdownEditor.addEventListener('input', () => {
         updatePreview();
+        updateStats();
         autoSave();
     });
 
@@ -54,6 +56,32 @@ function initializeEditor() {
         tocPreview.style.display = isVisible ? 'none' : 'block';
         toggleTocPreview.textContent = isVisible ? 'Show TOC' : 'Hide TOC';
     });
+
+    // Image upload modal
+    const uploadImageBtn = document.getElementById('uploadImageBtn');
+    const imageModal = document.getElementById('imageModal');
+    const closeImageModal = document.getElementById('closeImageModal');
+    const selectFileBtn = document.getElementById('selectFileBtn');
+    const imageFileInput = document.getElementById('imageFileInput');
+    const imageUrlInput = document.getElementById('imageUrlInput');
+    const insertImageBtn = document.getElementById('insertImageBtn');
+
+    uploadImageBtn.addEventListener('click', () => {
+        imageModal.classList.add('active');
+    });
+
+    closeImageModal.addEventListener('click', () => {
+        imageModal.classList.remove('active');
+        resetImageModal();
+    });
+
+    selectFileBtn.addEventListener('click', () => {
+        imageFileInput.click();
+    });
+
+    imageFileInput.addEventListener('change', handleFileSelect);
+    imageUrlInput.addEventListener('input', handleUrlInput);
+    insertImageBtn.addEventListener('click', insertImage);
 
     // Toolbar buttons
     const toolButtons = document.querySelectorAll('.tool-btn');
@@ -119,6 +147,15 @@ function applyMarkdownFormat(action) {
                 replacement = `\`${selectedText || 'code'}\``;
             }
             break;
+        case 'quote':
+            replacement = `> ${selectedText || 'quote'}`;
+            break;
+        case 'list':
+            replacement = `- ${selectedText || 'list item'}`;
+            break;
+        case 'image':
+            document.getElementById('imageModal').classList.add('active');
+            return;
     }
 
     editor.value = editor.value.substring(0, start) + replacement + editor.value.substring(end);
@@ -179,6 +216,8 @@ function publishPost() {
     const title = document.getElementById('postTitleInput').value.trim();
     const author = document.getElementById('postAuthorInput').value.trim() || 'Anonymous';
     const content = document.getElementById('markdownEditor').value.trim();
+    const tags = document.getElementById('postTags').value.trim();
+    const category = document.getElementById('postCategory').value.trim() || 'General';
 
     if (!title) {
         alert('Please enter a title for your post!');
@@ -190,11 +229,18 @@ function publishPost() {
         return;
     }
 
+    // Calculate reading time
+    const words = content.trim().split(/\s+/).length;
+    const readTime = Math.max(1, Math.ceil(words / 200));
+
     const post = {
         id: generateId(),
         title: title,
         author: author,
         content: content,
+        tags: tags ? tags.split(',').map(t => t.trim()) : [],
+        category: category,
+        readTime: readTime,
         date: new Date().toISOString()
     };
 
@@ -229,7 +275,9 @@ function saveDraft() {
     const draft = {
         title: document.getElementById('postTitleInput').value,
         author: document.getElementById('postAuthorInput').value,
-        content: document.getElementById('markdownEditor').value
+        content: document.getElementById('markdownEditor').value,
+        tags: document.getElementById('postTags').value,
+        category: document.getElementById('postCategory').value
     };
     localStorage.setItem('blog_draft', JSON.stringify(draft));
 }
@@ -237,11 +285,14 @@ function saveDraft() {
 function loadDraft() {
     const draft = localStorage.getItem('blog_draft');
     if (draft) {
-        const { title, author, content } = JSON.parse(draft);
+        const { title, author, content, tags, category } = JSON.parse(draft);
         document.getElementById('postTitleInput').value = title || '';
         document.getElementById('postAuthorInput').value = author || '';
         document.getElementById('markdownEditor').value = content || '';
+        document.getElementById('postTags').value = tags || '';
+        document.getElementById('postCategory').value = category || '';
         updatePreview();
+        updateStats();
     }
 }
 
